@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
+</head>
+<body>
+
+    <script> 
+    let fruitPlayer ,t =0 ,collector
+    const config = {
+        type : Phaser.AUTO,
+        width : 900 , 
+        height : 500 , 
+        physics : {
+            default : "arcade",
+            arcade :{
+                gravity : {y:100},
+                debug : false
+            }
+        },
+
+        scene : {
+            preload : preload, 
+            create : create ,
+            update : update 
+        }
+        
+    }
+    const game = new Phaser.Game(config);
+    
+    function preload(){
+        this.load.image("sky" , "./Assets/craftpix-net-481981-free-summer-pixel-art-backgrounds/Cartoon_Forest_BG_02.png")
+        let directory = "./Assets/craftpix-net-772742-free-fruit-vector-icon-pack-for-rpg/shadow"
+        for(let x = 1 ; x<48 ; x++){
+            try{
+            this.load.image(`fruit${x}` , `${directory}/${x}.png`)
+            }
+            catch{
+                console.log(x+"is undefined");
+            }
+        }
+        this.load.image("collector","./Assets/collector/Character4_face1.png")
+
+        
+        
+        
+    }
+    function create(){
+        this.add.image(300 ,200 , "sky").setScale(0.65)
+       
+        fruitPlayer = setfruit.call(this)
+        
+        
+        collector = this.physics.add.sprite(100,config.height,"collector")
+
+        collector.setScale(0.8).setCollideWorldBounds(true)
+       
+        
+             
+    }
+    function update(){
+
+        let cursor = this.input.keyboard.createCursorKeys()
+        // this.physics.add.collider(collector , fruitPlayer)
+        this.physics.add.overlap(collector,fruitPlayer, collectFruit ,null ,this)
+         
+        if(cursor.left.isDown){
+            collector.setVelocityX(-200)
+
+        }
+        else if(cursor.right.isDown){
+            collector.setVelocityX(200)
+        } 
+        else {
+            collector.setVelocityX(0)
+        }
+        checkfruit.call(this)
+    }
+    function checkfruit(){
+        
+        if(fruitPlayer.y > config.height){
+            fruitPlayer.destroy()
+            setfruit.call(this)
+        }
+    }
+    function collectFruit(collector , fruitPlayer){
+       
+        fruitPlayer.destroy()
+        setfruit.call(this)
+       
+    }
+    function setfruit(){
+        fruitPlayer = this.physics.add.sprite(Math.floor(Math.random()*config.width+1),
+                                                  0,
+                                                  `fruit${Math.floor(Math.random()*48)+1}`).setScale(0.5)
+         
+        return fruitPlayer
+    }
+
+    </script>
+
+</body>
+</html>
