@@ -10,6 +10,7 @@ h1{
     top: 30%;
     left : 30%;
     color: white;
+    text-transform: uppercase;
 }
 input{
     top: 40%;
@@ -30,9 +31,14 @@ input:active{
     left : 75%;
     font-size: x-large;
 }    
+.SettargetScore{
+    top : 20%;
+    left : 30%;
+    width: fit-content;
+}
 .targetScore{
     top : 3%;
-    left : 85%;
+    left : 82%;
     font-size: large;
 }
 p{
