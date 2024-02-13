@@ -239,5 +239,13 @@ const config = {
     }
 
 
-startGame()
+if(window.innerWidth < 1100){
+   document.querySelector(".main").setAttribute("hidden",'true')
+   document.querySelector(".Error").removeAttribute("hidden")
+}
+else {
+    console.log(window)
+
+    startGame()
     
+}
