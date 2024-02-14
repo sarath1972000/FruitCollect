@@ -6,7 +6,8 @@ let lives = 5
 let game
 let speed = 0
 let target = 0
-
+let timeMusic =[]
+let backgroundSound
 
 const config = {
         type : Phaser.AUTO,
@@ -42,10 +43,11 @@ const config = {
         }
         this.load.image("collector","./Assets/collector/Character4_face1.png")
         this.load.image("bomb" , "./Assets/bombs/Bomb_2_Idle_006.png")
-
-        
-        
-        
+        this.load.audio("bombBlast" ,"./Assets/audio/8-bit-fireball-81148.mp3")
+        this.load.audio("FruitCollect","./Assets/audio/robot_01-47250.mp3")
+        this.load.audio("backgroundPlay","./Assets/audio/i-am-dreaming-or-final-fantasy-menu-kinda-thing-29173.mp3")
+        this.load.audio("levelCompleted","./Assets/audio/mixkit-completion-of-a-level-2063.wav")
+        this.load.audio("levelFailed" ,"./Assets/audio/negative_beeps-6008.mp3")
     }
     function create(){
         this.add.image(300 ,200 , "sky").setScale(0.65)
@@ -56,15 +58,14 @@ const config = {
         collector = this.physics.add.sprite(100,config.height,"collector")
 
         collector.setScale(0.8).setCollideWorldBounds(true)
-       
-        
+        object =this
+        addBackgroundMusic.call(object)
              
     }
     function update(){
         
         let cursor = this.input.keyboard.createCursorKeys()
         // this.physics.add.collider(collector , fruitPlayer)
-        
         addOverlap.call(this)
      
         if(cursor.left.isDown ){
@@ -95,6 +96,10 @@ const config = {
                 document.querySelector(".lives").innerHTML = "Life : "+lives
                 if(lives == 0){
                     this.scene.stop()
+                    timeMusic.forEach(function(element){
+                        clearInterval(element)
+                    })
+                    backgroundSound.setMute(true)
                     startGame.call(this)
                 }
                 if(score>0) score-=5
@@ -117,11 +122,17 @@ const config = {
     function collectFruit(collector , x){    
         x.destroy()
         score+=5
+        const collected = this.sound.add("FruitCollect")
+        collected.play()
         addBomb.call(this)
         document.querySelector(".score").innerHTML = "Score : "+score
-        if(score == target){
+        if(score == target || score > target){
             console.log("game wins")
             this.scene.stop()
+            timeMusic.forEach(function(element){
+                clearInterval(element)
+            })
+            backgroundSound.setMute(true)
             startGame.call(this)
 
         }
@@ -130,16 +141,22 @@ const config = {
 
     function bombAttack(collector ,instance){
         instance.destroy()
+        const destroySound = this.sound.add("bombBlast")
         if(score>0) {
             score-=10
             document.querySelector(".score").innerHTML = "Score : "+score
         }
         collector.setTint(0x000000)
         setTimeout(()=>{
+            destroySound.play()
             collector.clearTint()
             lives-=1
             if(lives == 0){
                 this.scene.stop()
+                timeMusic.forEach(function(element){
+                    clearInterval(element)
+                })
+                backgroundSound.setMute(true)
                 startGame.call(this)
             }
             document.querySelector(".lives").innerHTML = "Life : "+lives
@@ -160,19 +177,30 @@ const config = {
             this.physics.add.overlap(collector,instance, bombAttack ,null ,this)
         }
     }
+    function addBackgroundMusic(){
+        backgroundSound = object.sound.add("backgroundPlay")
+        let token= setInterval(function(){
+            backgroundSound.play()
+        },4000)
+        timeMusic.push(token)
+    }
     function startGame(){
         if(score>0 && lives !=0){
             lives = 5 
             score = 0
+            const object= this 
+            const winSound = this.sound.add("levelCompleted")
+            winSound.play()
             document.querySelector("input").removeAttribute("hidden")
             document.querySelector("h1").innerHTML="You Win"
             document.querySelector("input").setAttribute("value","play again") 
             document.querySelector(".SettargetScore").removeAttribute("hidden")
             document.querySelector(".SettargetScore").value = ''
             document.querySelector(".SettargetScore").setAttribute("placeholder" , "set target")  
-            const object= this 
             let element = document.querySelector("input").addEventListener("click",function(){
+                winSound.stop()
                 object.scene.start()   
+                addBackgroundMusic.call(this)
                 document.querySelector("h1").innerHTML=""
                 document.querySelector("input").setAttribute("value","")
                 document.querySelector("input").setAttribute("hidden",'true')
@@ -192,13 +220,17 @@ const config = {
             score = 0
             document.querySelector("h1").innerHTML="You Failed"
             const object = this 
+            const LostSound = this.sound.add("levelFailed")
+            LostSound.play()
             document.querySelector("input").removeAttribute("hidden")
             document.querySelector("input").setAttribute("value","play again")
             document.querySelector(".SettargetScore").removeAttribute("hidden")
             document.querySelector(".SettargetScore").value = ''
             document.querySelector(".SettargetScore").setAttribute("placeholder" , "set target")  
             let element = document.querySelector("input").addEventListener("click",function(){
-                object.scene.start()   
+                LostSound.stop()
+                object.scene.start() 
+                addBackgroundMusic.call(this)  
                 document.querySelector("h1").innerHTML=""
                 document.querySelector("input").setAttribute("value","")
                 document.querySelector("input").setAttribute("hidden",'true')
@@ -244,7 +276,6 @@ if(window.innerWidth < 1100){
    document.querySelector(".Error").removeAttribute("hidden")
 }
 else {
-    console.log(window)
 
     startGame()
     
